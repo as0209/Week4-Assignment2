@@ -1,0 +1,101 @@
+---
+title: "ANA515 Assignment 2"
+author: "Angina Shrestha"
+date: "2024-06-12"
+output: 
+  html_document:
+    theme: cerulean
+---
+
+## Data Description
+
+For this assignment I am using car evaluation dataset from Kaggle, which is a csv file. The delimiter used in this dataset is ','. This dataset includes the data about a cars buying price, maintenance price, number of doors, number of person it can accommodate, size of the luggage boot and safety of the car. It uses all that attributes to give a decision of if the car has an acceptability value of unacc (unacceptable), acc (acceptable), good and vgood (verygood). This dataset contains all categorical variables.
+
+Possible values of attributes:    
+buying = vhigh, high, med, low   
+maintenance = vhigh, high, med, low  
+doors = 2,3,4,5more  
+person_fit = 2, 4, more  
+luggage_boot = small, med, big  
+safety = low, med, high  
+
+This dataset was derived from a simple hierarchical decision model which was originally developed to demonstrate multi-attribute decision making. It was first introduced by M.Bohanec and V.Rajkovic for their work "Expert system for decision making" which was published in 1990 and then this dataset was donated in 1997.
+
+```{r readData, include=FALSE}
+install.packages("readr", repos = "http://cran.us.r-project.org")
+library(readr)
+carEval <- read.csv("car_evaluation.csv", header = FALSE, sep = ",")
+#I used read_csv function to read the csv file which I had downloaded in my desktop. read_csv is a function of readr package which I had to install and load before I could call that function
+```
+
+```{r cleanData, include=FALSE, message=FALSE, warning=FALSE}
+install.packages("tidyverse", repos = "http://cran.us.r-project.org")
+install.packages("dplyr", repos = "http://cran.us.r-project.org")
+library(tidyverse)
+library(dplyr)
+renamed_CarEval <- carEval %>%
+  rename("buying" = "V1",
+         "maintenance" = "V2",
+         "doors" = "V3",
+         "person_fit" = "V4",
+         "luggage_boot" = "V5",
+         "safety" = "V6",
+         "car_acceptability" = "V7")
+```
+
+
+This dataframe has `r nrow(renamed_CarEval)` rows and `r ncol(renamed_CarEval)` columns
+```{r include=FALSE}
+install.packages("knitr", repos = "http://cran.us.r-project.org")
+library(knitr)
+```
+```{r table, echo=FALSE,message=FALSE, warning=FALSE}
+colName <- c("buying", 
+             "maintenance",
+             "doors", 
+             "person_fit", 
+             "luggage_boot", 
+             "safety", 
+             "car_acceptability")
+description <- c("buying price of the car", 
+                 "maintenance price of the car",
+                 "number of doors that car has",
+                 "number of person that the car can fit",
+                 "size of the luggage boot of the car",
+                 "estimated safety of the car",
+                 "acceptability of the car")
+table<-data.frame(colName, description)
+
+knitr::kable(table,col.names = c("Column Name", "Description"), caption = "Characteristics of the data" )
+```
+
+```{r categoricalSummary, echo=FALSE}
+subsetCarEval <- renamed_CarEval %>%
+  select(person_fit, luggage_boot, safety)
+summary1 <- summary(subsetCarEval)
+print(summary1)
+missing_values <- colSums(is.na(subsetCarEval))
+print(missing_values)
+```
+
+```{r newColumnSummary, echo=FALSE}
+#The dataset includes only categorical values so creating 3 new columns named person_fit_num, luggage_boot_num, safety_num and assigning numerical values to them
+# assigning person_fit's value of "more" as 6
+# assigning luggage_boot's value of "small" as 1, "med" as 2 and "big" as 3
+# assigning safety's value of "low" as 1, "med" as 2 and "high" as 3
+
+subsetCarEval$person_fit_num <- ifelse(subsetCarEval$person_fit == "2", 2,
+                          ifelse(subsetCarEval$person_fit == "4", 4, 6))
+subsetCarEval$luggage_boot_num <- ifelse(subsetCarEval$luggage_boot == "small", 1,
+                          ifelse(subsetCarEval$luggage_boot == "med", 2, 3))
+subsetCarEval$safety_num <- ifelse(subsetCarEval$safety == "low", 1,
+                          ifelse(subsetCarEval$safety == "med", 2, 3))
+numerical_subset_carEval <- subsetCarEval %>%
+  select(person_fit_num, luggage_boot_num, safety_num)
+summary2 <- summary(numerical_subset_carEval)
+print(summary2)
+missing_Values1 <- colSums(is.na(numerical_subset_carEval))
+print(missing_Values1)
+```
+
+
